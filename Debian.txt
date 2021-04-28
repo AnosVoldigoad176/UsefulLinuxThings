@@ -22,3 +22,5 @@ sudo nano /etc/ssh/sshd_config
 sudo systemctl restart ssh.service
 
 sudo iptables -A INPUT -p tcp --dport <PORT> -j ACCEPT
+
+sudo nano /etc/hosts
