@@ -24,3 +24,60 @@ sudo systemctl restart ssh.service
 sudo iptables -A INPUT -p tcp --dport <PORT> -j ACCEPT
 
 sudo nano /etc/hosts
+
+
+
+
+// Nginx wed
+sudo mkdir /var/www/your_domain
+sudo chown -R $USER:$USER /var/www/your_domain
+sudo nano /etc/nginx/sites-available/your_domain
+sudo ln -s /etc/nginx/sites-available/your_domain /etc/nginx/sites-enabled/
+sudo unlink /etc/nginx/sites-enabled/your_domain
+sudo nginx -t
+sudo systemctl reload nginx
+
+/*******************************************************/
+server {
+    listen              443 ssl http2;
+    listen              [::]:443 ssl http2;
+    server_name         moonivia.com;
+    set                 $base /var/www/aki176/moonivia.com;
+    root                $base/;
+
+    # SSL
+    ssl_certificate     /etc/nginx/ssl/moonivia.com.crt;
+    ssl_certificate_key /etc/nginx/ssl/moonivia.com.key;
+
+    # logging
+    access_log          /var/log/nginx/moonivia.com.access.log;
+    error_log           /var/log/nginx/moonivia.com.error.log warn;
+
+    # index.html fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # index.php fallback
+    location ~ ^/api/ {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    # additional config
+    include nginxconfig.io/general.conf;
+
+    # handle .php
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+    }
+}
+
+# HTTP redirect
+server {
+    listen      80;
+    listen      [::]:80;
+    server_name .moonivia.com;
+    return      301 https://moonivia.com$request_uri;
+}
+/*******************************************************/
+
